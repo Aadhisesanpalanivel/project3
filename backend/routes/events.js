@@ -2,26 +2,6 @@ const express = require('express');
 const Event = require('../models/Event');
 const router = express.Router();
 const jwt = require('jsonwebtoken');
-const auth = require('../middleware/auth');
-
-// Middleware to authenticate user
-const authenticateUser = async (req, res, next) => {
-    try {
-        const token = req.headers.authorization?.split(' ')[1];
-        if (!token) {
-            return res.status(401).json({ message: 'Authentication required' });
-        }
-
-        const decoded = jwt.verify(token, process.env.JWT_SECRET);
-        req.user = { id: decoded.userId };
-        next();
-    } catch (error) {
-        res.status(401).json({ message: 'Invalid token' });
-    }
-};
-
-// Apply authentication middleware to all routes
-router.use(authenticateUser);
 
 // Test route to check MongoDB connection
 router.get('/test', async (req, res) => {
@@ -78,16 +58,22 @@ router.get('/', async (req, res) => {
 
 // Create event
 router.post('/', async (req, res) => {
+    console.log("check one");
+    console.log('Request body:', 
+        
+    ); 
+    console.log("check two");
+    const newEvent = new Event(req.body);
+    console.log("event creation",newEvent)
+    console.log("check three");
     try {
-        const eventData = {
-            ...req.body,
-            createdBy: req.user.id,
-            registeredParticipants: []
-        };
-        const event = await Event.create(eventData);
-        res.status(201).json(event);
+        console.log("check 4");
+        
+        await newEvent.save();
+        console.log("check 5");
+        res.status(201).json(newEvent);
     } catch (error) {
-        res.status(400).json({ message: error.message });
+        res.status(400).json({ message: 'Failed to create event', error: error.message });
     }
 });
 
@@ -154,14 +140,9 @@ router.post('/:id/register', async (req, res) => {
             return res.status(400).json({ message: 'Event is full' });
         }
 
-        // Check if user is already registered
-        if (event.isUserRegistered(req.user.id)) {
-            return res.status(400).json({ message: 'Already registered for this event' });
-        }
-
         // Add user to registered participants
         event.registeredParticipants.push({
-            user: req.user.id,
+            user: req.body.user,
             registeredAt: new Date()
         });
 
@@ -187,14 +168,9 @@ router.post('/:id/unregister', async (req, res) => {
             return res.status(404).json({ message: 'Event not found' });
         }
 
-        // Check if user is registered
-        if (!event.isUserRegistered(req.user.id)) {
-            return res.status(400).json({ message: 'Not registered for this event' });
-        }
-
         // Remove user from registered participants
         event.registeredParticipants = event.registeredParticipants.filter(
-            participant => participant.user.toString() !== req.user.id.toString()
+            participant => participant.user.toString() !== req.body.user.toString()
         );
 
         await event.save();
@@ -212,7 +188,7 @@ router.post('/:id/unregister', async (req, res) => {
 router.get('/user/registered', async (req, res) => {
     try {
         const events = await Event.find({
-            'registeredParticipants.user': req.user.id
+            'registeredParticipants.user': req.body.user
         })
         .populate('createdBy', 'name email')
         .populate('registeredParticipants.user', 'name email')
@@ -227,7 +203,7 @@ router.get('/user/registered', async (req, res) => {
 // Get events created by user
 router.get('/user/created', async (req, res) => {
     try {
-        const events = await Event.find({ createdBy: req.user.id })
+        const events = await Event.find({ createdBy: req.body.user })
             .populate('createdBy', 'name email')
             .populate('registeredParticipants.user', 'name email')
             .sort({ date: 1 });

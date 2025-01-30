@@ -44,10 +44,14 @@ export const EventProvider = ({ children }) => {
             setLoading(true);
             const config = {
                 headers: {
-                    'Content-Type': 'application/json',
-                    'Authorization': `Bearer ${currentUser?.token}`
+                    'Content-Type': 'application/json'
                 }
             };
+
+            // Ensure all required fields are present
+            if (!eventData.title || !eventData.date || !eventData.time || !eventData.location || !eventData.category || !eventData.description) {
+                throw new Error('All fields are required.');
+            }
 
             const response = await axios.post(
                 'http://localhost:5000/api/events',
@@ -58,6 +62,8 @@ export const EventProvider = ({ children }) => {
             setEvents(prevEvents => [...prevEvents, response.data]);
             return response.data;
         } catch (err) {
+            console.error('Error adding event:', err);
+            setError('Failed to create event: ' + (err.response?.data?.message || err.message));
             throw err;
         } finally {
             setLoading(false);

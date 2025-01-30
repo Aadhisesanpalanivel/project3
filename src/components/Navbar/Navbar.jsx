@@ -36,6 +36,9 @@ const Navbar = () => {
                         <Link to="/events/create" className="nav-link create-event">
                             <i className="fas fa-plus"></i> Create Event
                         </Link>
+                        <Link to="/events/add" className="nav-link">
+                            <i className="fas fa-plus"></i> Events Adding
+                        </Link>
                         <div className="nav-user">
                             <span className="user-name">
                                 <i className="fas fa-user"></i> {currentUser.name}

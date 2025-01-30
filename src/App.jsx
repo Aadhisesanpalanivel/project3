@@ -7,6 +7,8 @@ import EventCalendar from './components/FunctionalComponents/EventCalendar';
 import EventSearch from './components/FunctionalComponents/EventSearch';
 import EventDetails from './components/FunctionalComponents/EventDetails';
 import EventCreate from './components/ClassComponents/EventCreate';
+import AddEvent from './components/FunctionalComponents/AddEvent';
+import DeleteEvents from './components/FunctionalComponents/DeleteEvents';
 import PrivateRoute from './components/Auth/PrivateRoute';
 import './App.css';
 
@@ -33,6 +35,16 @@ function App() {
                                 <Route path="/events/create" element={
                                     <PrivateRoute>
                                         <EventCreate />
+                                    </PrivateRoute>
+                                } />
+                                <Route path="/events/add" element={
+                                    <PrivateRoute>
+                                        <AddEvent />
+                                    </PrivateRoute>
+                                } />
+                                <Route path="/events/delete" element={
+                                    <PrivateRoute>
+                                        <DeleteEvents />
                                     </PrivateRoute>
                                 } />
                                 <Route path="/events/:id" element={
